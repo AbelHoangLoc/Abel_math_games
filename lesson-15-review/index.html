@@ -1,0 +1,885 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <link rel="stylesheet" href="../assets/brand.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Lesson 15 • Review HK1 (Lessons 01–14)</title>
+  <style>
+    :root{
+      --bg1:#eaf3ff;
+      --bg2:#f6fff2;
+      --card: rgba(255,255,255,.92);
+      --border: rgba(148,163,184,.25);
+      --text:#0f172a;
+      --muted:#64748b;
+      --accent:#2563eb;
+      --accent2:#06b6d4;
+      --ok:#16a34a;
+      --bad:#ef4444;
+      --shadow: 0 18px 45px rgba(15, 23, 42, .12);
+      --shadow2: 0 10px 25px rgba(15, 23, 42, .08);
+      --radius: 20px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,"Apple Color Emoji","Segoe UI Emoji";
+      color:var(--text);
+      min-height:100vh;
+      background:
+        radial-gradient(1100px 600px at 12% 10%, rgba(37,99,235,.18), transparent 55%),
+        radial-gradient(900px 520px at 88% 12%, rgba(6,182,212,.16), transparent 55%),
+        radial-gradient(700px 420px at 70% 82%, rgba(34,197,94,.10), transparent 60%),
+        linear-gradient(135deg, var(--bg1), var(--bg2));
+    }
+    .wrap{
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 16px;
+      display:grid;
+      grid-template-columns: 360px 1fr;
+      gap: 16px;
+      min-height: 100vh;
+    }
+    .card{
+      background: var(--card);
+      border:1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    header{
+      padding: 14px 16px;
+      border-bottom:1px solid var(--border);
+      background: rgba(255,255,255,.65);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+    }
+    .logo{
+      width:42px;height:42px;border-radius:14px;
+      display:grid;place-items:center;
+      border:1px solid rgba(148,163,184,.25);
+      background: linear-gradient(135deg, rgba(37,99,235,.14), rgba(6,182,212,.10));
+      box-shadow: var(--shadow2);
+      font-size:22px;
+    }
+    .t b{display:block;font-size:15px;letter-spacing:.2px}
+    .t span{display:block;font-size:12px;color:var(--muted);margin-top:2px}
+    .chips{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+    .chip{
+      border:1px solid var(--border);
+      background: rgba(255,255,255,.75);
+      border-radius: 999px;
+      padding: 7px 10px;
+      font-size:12px;
+      box-shadow: var(--shadow2);
+      display:flex;gap:8px;align-items:center;
+      user-select:none;
+    }
+
+    /* Left panel */
+    .left{ display:flex; flex-direction:column; min-height: 640px; }
+    .left .body{ padding: 14px 14px 12px; }
+    .big{ font-weight:950; font-size:18px; margin: 2px 0 6px; letter-spacing:.2px; }
+    .sub{ color:var(--muted); font-size:13px; line-height:1.4; }
+    .btnrow{ display:flex; gap:10px; flex-wrap:wrap; margin-top: 12px; }
+    .btn{
+      border:1px solid rgba(148,163,184,.30);
+      background: rgba(255,255,255,.86);
+      border-radius: 999px;
+      padding: 10px 14px;
+      font-size: 13px;
+      cursor:pointer;
+      box-shadow: var(--shadow2);
+      transition:.15s;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      user-select:none;
+    }
+    .btn:hover{transform: translateY(-1px)}
+    .btn.primary{
+      border-color: rgba(37,99,235,.35);
+      background: linear-gradient(135deg, rgba(37,99,235,.14), rgba(6,182,212,.12));
+      font-weight:800;
+    }
+    .btn.ghost{ background: rgba(255,255,255,.55); }
+
+    .progress{
+      margin-top: 12px;
+      border:1px solid rgba(148,163,184,.25);
+      border-radius: 16px;
+      padding: 12px;
+      background: rgba(255,255,255,.65);
+    }
+    .row{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom: 8px; }
+    .meter{ height: 10px; background: rgba(148,163,184,.22); border-radius: 999px; overflow:hidden; }
+    .bar{
+      height:100%; width:0%;
+      background: linear-gradient(90deg, rgba(37,99,235,.85), rgba(6,182,212,.85));
+      border-radius: 999px; transition: .25s ease;
+    }
+    .small{ font-size:12px; color: var(--muted); }
+
+    .skills{
+      margin-top: 12px;
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px;
+    }
+    .skill{
+      border:1px solid rgba(148,163,184,.22);
+      border-radius: 16px;
+      padding: 10px;
+      background: rgba(255,255,255,.70);
+      display:flex; align-items:center; gap:10px;
+    }
+    .sico{
+      width:34px;height:34px;border-radius:12px;
+      display:grid;place-items:center;
+      border:1px solid rgba(148,163,184,.20);
+      background: linear-gradient(135deg, rgba(34,197,94,.14), rgba(6,182,212,.10));
+      box-shadow: var(--shadow2);
+      flex:0 0 34px;
+      font-size:18px;
+    }
+    .skill b{font-size:12px}
+    .skill span{display:block;color:var(--muted);font-size:12px;margin-top:2px}
+    .done{ border-color: rgba(22,163,74,.35); }
+    .done .sico{ background: linear-gradient(135deg, rgba(22,163,74,.18), rgba(6,182,212,.10)); }
+
+    /* Right panel */
+    .right{ display:flex; flex-direction:column; min-height: 640px; }
+    .stage{ padding: 14px; flex:1; }
+    .panel{
+      height:100%;
+      border:1px solid rgba(148,163,184,.20);
+      border-radius: 18px;
+      padding: 14px;
+      background: rgba(255,255,255,.72);
+      box-shadow: 0 14px 40px rgba(15,23,42,.10);
+      position:relative;
+      overflow:hidden;
+    }
+    .qtop{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom: 12px; }
+    .qtitle{ font-weight:950; font-size:16px; letter-spacing:.2px; }
+    .tag{
+      font-size:12px;color: var(--muted);
+      border:1px solid rgba(148,163,184,.26);
+      background: rgba(255,255,255,.72);
+      padding: 6px 10px;
+      border-radius: 999px;
+    }
+    .question{
+      background: rgba(255,255,255,.92);
+      border: 1px solid rgba(148,163,184,.20);
+      border-radius: 18px;
+      padding: 14px;
+      box-shadow: var(--shadow2);
+    }
+    .prompt{ font-size:16px; font-weight:900; line-height:1.25; margin: 0 0 10px; }
+    .hint{ color: var(--muted); font-size: 13px; margin-top: 6px; line-height:1.4; }
+    .choices{
+      margin-top: 12px;
+      display:grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .choice{
+      border:1px solid rgba(148,163,184,.25);
+      background: rgba(255,255,255,.90);
+      border-radius: 16px;
+      padding: 12px 10px;
+      cursor:pointer;
+      box-shadow: 0 10px 22px rgba(15,23,42,.08);
+      transition:.15s;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size: 18px;
+      font-weight: 950;
+      user-select:none;
+      min-height: 54px;
+    }
+    .choice:hover{ transform: translateY(-1px); }
+    .choice.correct{ border-color: rgba(22,163,74,.40); outline: 3px solid rgba(22,163,74,.15); }
+    .choice.wrong{ border-color: rgba(239,68,68,.40); outline: 3px solid rgba(239,68,68,.12); }
+
+    .two-cols{ display:grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items:center; }
+
+    /* Clock */
+    .clock{
+      width: 220px; height: 220px; margin: 4px auto;
+      border-radius: 999px;
+      background: rgba(255,255,255,.95);
+      border: 10px solid rgba(37,99,235,.18);
+      box-shadow: 0 16px 32px rgba(15,23,42,.10);
+      position:relative;
+    }
+    .clock .center{
+      width:12px;height:12px;border-radius:999px;
+      background:#0f172a;
+      position:absolute; left:50%; top:50%;
+      transform: translate(-50%,-50%);
+    }
+    .hand{ position:absolute; left:50%; top:50%; transform-origin: bottom center; border-radius: 999px; }
+    .hand.minute{
+      width:6px; height: 86px; background: rgba(6,182,212,.95);
+      transform: translate(-50%,-100%) rotate(0deg);
+    }
+    .hand.hour{
+      width:8px; height: 62px; background: rgba(37,99,235,.95);
+      transform: translate(-50%,-100%) rotate(0deg);
+    }
+    .tick{
+      position:absolute; left:50%; top:50%;
+      width:2px; height:10px;
+      background: rgba(15,23,42,.25);
+      transform-origin: center calc(100% + 86px);
+      border-radius: 6px;
+    }
+    .num{
+      position:absolute;
+      left:50%; top:50%;
+      transform: translate(-50%,-50%);
+      font-weight: 900;
+      color: rgba(15,23,42,.75);
+      font-size: 14px;
+    }
+
+    /* Ten frame */
+    .tenframe{
+      width: 260px; margin: 0 auto;
+      display:grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+      padding: 12px;
+      border:1px solid rgba(148,163,184,.22);
+      border-radius: 18px;
+      background: rgba(255,255,255,.88);
+      box-shadow: var(--shadow2);
+    }
+    .cell{
+      width: 100%;
+      aspect-ratio: 1/1;
+      border-radius: 14px;
+      border:1px dashed rgba(148,163,184,.45);
+      display:grid;place-items:center;
+      font-size: 18px;
+      font-weight:900;
+      color: rgba(15,23,42,.85);
+      background: rgba(255,255,255,.70);
+    }
+    .dot{ width: 18px;height:18px;border-radius:999px; background: rgba(34,197,94,.85); box-shadow: 0 10px 18px rgba(34,197,94,.18); }
+    .dot.blue{ background: rgba(37,99,235,.85); box-shadow: 0 10px 18px rgba(37,99,235,.18); }
+
+    /* Picture graph */
+    .graph{
+      width: 280px; margin: 0 auto; padding: 12px;
+      border:1px solid rgba(148,163,184,.22);
+      border-radius: 18px;
+      background: rgba(255,255,255,.88);
+      box-shadow: var(--shadow2);
+    }
+    .gline{
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      padding: 8px 6px;
+      border-radius: 14px;
+      background: rgba(255,255,255,.78);
+      border:1px solid rgba(148,163,184,.18);
+      margin-bottom: 8px;
+    }
+    .gleft{ display:flex; align-items:center; gap:10px; font-weight:900; }
+    .icons{ display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end; }
+    .miniIcon{
+      width:18px;height:18px;border-radius: 6px;
+      border:1px solid rgba(148,163,184,.18);
+      background: linear-gradient(135deg, rgba(37,99,235,.18), rgba(6,182,212,.10));
+      display:grid;place-items:center;
+      font-size: 12px;
+    }
+
+    .feedback{
+      margin-top: 10px;
+      padding: 10px 12px;
+      border-radius: 16px;
+      border:1px solid rgba(148,163,184,.22);
+      background: rgba(255,255,255,.78);
+      display:flex; align-items:center; justify-content:space-between; gap:12px;
+    }
+    .msg{ font-weight:900; font-size: 14px; }
+    .msg.ok{ color: var(--ok); }
+    .msg.bad{ color: var(--bad); }
+    .nextbtn{
+      border:1px solid rgba(148,163,184,.30);
+      background: rgba(255,255,255,.92);
+      border-radius: 999px;
+      padding: 8px 12px;
+      cursor:pointer;
+      font-weight:900;
+      box-shadow: var(--shadow2);
+    }
+    .nextbtn:hover{ transform: translateY(-1px); }
+
+    .end{
+      display:grid;
+      place-items:center;
+      text-align:center;
+      height:100%;
+      padding: 20px;
+    }
+    .end h2{ margin: 8px 0 6px; }
+    .end p{ color: var(--muted); margin: 0 0 12px; line-height:1.5; }
+
+    @media (max-width: 980px){
+      .wrap{ grid-template-columns: 1fr; }
+      .choices{ grid-template-columns: 1fr; }
+      .two-cols{ grid-template-columns: 1fr; }
+      .clock{ width: 200px; height: 200px; }
+    }
+  </style>
+</head>
+
+<body>
+  <img src="../assets/logo-oodles-math.png" class="oodles-logo">
+  <div class="wrap">
+    <!-- LEFT -->
+    <section class="card left">
+      <header>
+        <div class="brand">
+          <div class="logo">📚</div>
+          <div class="t">
+            <b>Lesson 15 • Review HK1</b>
+            <span>Ôn tập Lessons 01–14</span>
+          </div>
+        </div>
+        <div class="chips">
+          <div class="chip" id="chipScore">⭐ Score: 0</div>
+          <div class="chip" id="chipQ">🧩 0 / 9</div>
+        </div>
+      </header>
+
+      <div class="body">
+        <div class="big">Chơi 9 câu • Ôn đủ kỹ năng HK1</div>
+        <div class="sub">
+          Nội dung bám đúng các lesson đã học: Counting to 20 • Ordinal • Patterns • Tens&Ones • Number patterns • Addition stories • Picture graph • Subtraction within 20 • Time (o’clock).
+        </div>
+
+        <div class="btnrow">
+          <button class="btn primary" id="startBtn">▶ Start</button>
+          <button class="btn ghost" id="resetBtn">🔄 Reset</button>
+        </div>
+
+        <div class="progress">
+          <div class="row">
+            <div class="small"><b>Tiến độ</b></div>
+            <div class="small" id="mini">Chưa bắt đầu</div>
+          </div>
+          <div class="meter"><div class="bar" id="bar"></div></div>
+        </div>
+
+        <div class="skills" id="skillGrid"></div>
+
+        <div class="progress" style="margin-top:12px">
+          <div class="small">
+            💡 Tip cho GV: Cho bé làm theo nhóm, mỗi câu 20–30 giây. Sai thì thử lại, không trừ điểm.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- RIGHT -->
+    <section class="card right">
+      <header>
+        <div class="brand">
+          <div class="logo">🎯</div>
+          <div class="t">
+            <b>Review Game</b>
+            <span>Click đáp án để trả lời</span>
+          </div>
+        </div>
+        <div class="chips">
+          <div class="chip">🔊 Sound: OFF</div>
+          <div class="chip">✨ OODLES MATH</div>
+        </div>
+      </header>
+
+      <div class="stage">
+        <div class="panel">
+          <div class="end" id="welcome">
+            <div>
+              <div style="font-size:44px">🌈</div>
+              <h2>Ready to review?</h2>
+              <p>Nhấn <b>Start</b> để bắt đầu nhé!</p>
+            </div>
+          </div>
+
+          <div id="quiz" style="display:none;">
+            <div class="qtop">
+              <div class="qtitle" id="qTitle">Question</div>
+              <div class="tag" id="qTag">Skill</div>
+            </div>
+
+            <div class="question" id="qBox"></div>
+            <div class="choices" id="choices"></div>
+
+            <div class="feedback" id="feedback" style="display:none;">
+              <div class="msg" id="msg">...</div>
+              <button class="nextbtn" id="nextBtn">Next ➜</button>
+            </div>
+          </div>
+
+          <div class="end" id="finish" style="display:none;">
+            <div>
+              <div style="font-size:44px">🏆</div>
+              <h2 id="finalTitle">Hoàn thành!</h2>
+              <p id="finalText">...</p>
+              <div class="btnrow" style="justify-content:center;">
+                <button class="btn primary" id="playAgain">▶ Play again</button>
+                <button class="btn" onclick="history.back()">↩ Back</button>
+              </div>
+              <div class="small" style="margin-top:10px">
+                GV có thể chụp màn hình kết quả để gửi phụ huynh 📸
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+  </div>
+
+<script>
+  // HK1 skills to cover (mapped from lesson list you gave)
+  const skills = [
+    { key:"count",  icon:"🔢", name:"Counting to 20", sub:"Đếm số" },
+    { key:"ord",    icon:"🥇", name:"Ordinal Numbers", sub:"1st–5th" },
+    { key:"pat",    icon:"🧩", name:"Shape Patterns", sub:"Lặp lại" },
+    { key:"ten",    icon:"🧮", name:"Tens & Ones Frame", sub:"10-frame" },
+    { key:"numPat", icon:"📈", name:"Number Patterns", sub:"+1 / +2 / +5" },
+    { key:"add",    icon:"➕", name:"Addition with Stories", sub:"Cộng bằng lời" },
+    { key:"graph",  icon:"📊", name:"Picture Graph", sub:"Đọc biểu đồ" },
+    { key:"sub",    icon:"➖", name:"Subtraction within 20", sub:"Trừ ≤ 20" },
+    { key:"time",   icon:"🕒", name:"Time (o’clock)", sub:"Giờ đúng" },
+  ];
+
+  const skillGrid = document.getElementById("skillGrid");
+  const skillState = {}; // key -> done bool
+  function renderSkills(){
+    skillGrid.innerHTML = "";
+    skills.forEach(s=>{
+      const div = document.createElement("div");
+      div.className = "skill" + (skillState[s.key] ? " done" : "");
+      div.innerHTML = `
+        <div class="sico">${s.icon}</div>
+        <div>
+          <b>${s.name}</b>
+          <span>${s.sub}</span>
+        </div>
+      `;
+      skillGrid.appendChild(div);
+    });
+  }
+
+  // Helpers
+  const rand = (a,b)=> Math.floor(Math.random()*(b-a+1))+a;
+  const shuffle = (arr)=> arr.map(v=>({v, r:Math.random()})).sort((a,b)=>a.r-b.r).map(x=>x.v);
+
+  function setBar(pct){ document.getElementById("bar").style.width = `${pct}%`; }
+  function setMini(t){ document.getElementById("mini").textContent = t; }
+
+  // Question builders (1 question per skill)
+  function qCounting(){
+    const n = rand(0,20);
+    const wrong1 = (n + rand(1,4)) % 21;
+    const wrong2 = Math.max(0, n - rand(1,4));
+    const choices = shuffle([n, wrong1, wrong2]).map(String);
+    return {
+      skill:"count", tag:"🔢 Counting",
+      html:`<div class="prompt">Which number is this?</div>
+            <div style="font-size:64px;font-weight:950;text-align:center;margin:6px 0 2px;">${n}</div>
+            <div class="hint">Chọn số đúng nhé.</div>`,
+      choices, answer:String(n)
+    };
+  }
+
+  function qOrdinal(){
+    const animal = ["🐶","🐱","🐰","🦊","🐼","🐯","🐸"][rand(0,6)];
+    const count = rand(3,5);
+    const pos = rand(1,count);
+    const ordMap = {1:"1st",2:"2nd",3:"3rd",4:"4th",5:"5th"};
+    const row = Array.from({length:count}, ()=> `<span style="font-size:44px;margin:0 6px">${animal}</span>`).join("");
+    const answer = ordMap[pos];
+    const wrongs = shuffle(Object.values(ordMap).filter(x=>x!==answer)).slice(0,2);
+    const choices = shuffle([answer, ...wrongs]);
+    return {
+      skill:"ord", tag:"🥇 Ordinal",
+      html:`<div class="prompt">Which one is the <span style="color:var(--accent)">${answer}</span>?</div>
+            <div style="text-align:center;padding:10px 0">${row}</div>
+            <div class="hint">Đếm từ trái sang phải nhé.</div>`,
+      choices, answer
+    };
+  }
+
+  function qPatterns(){
+    const patterns = [
+      {seq:["🔴","🔵","🔴","🔵","?"], ans:"🔴", wrong:["🔵","🟢"]},
+      {seq:["⭐","⭐","🌙","⭐","⭐","?"], ans:"🌙", wrong:["⭐","☀️"]},
+      {seq:["🟩","🟨","🟧","🟩","🟨","?"], ans:"🟧", wrong:["🟩","🟨"]},
+    ];
+    const p = patterns[rand(0,patterns.length-1)];
+    return {
+      skill:"pat", tag:"🧩 Pattern",
+      html:`<div class="prompt">What comes next?</div>
+            <div style="text-align:center;font-size:44px;padding:10px 0;letter-spacing:2px">
+              ${p.seq.join(" ")}
+            </div>
+            <div class="hint">Nhìn quy luật lặp lại nhé.</div>`,
+      choices: shuffle([p.ans, ...p.wrong]),
+      answer: p.ans
+    };
+  }
+
+  function qTensOnes(){
+    const n = rand(11,19);
+    const ones = n - 10;
+
+    const cells = [];
+    for(let i=0;i<10;i++) cells.push(`<div class="cell"><div class="dot"></div></div>`);
+    for(let i=0;i<ones;i++) cells.push(`<div class="cell"><div class="dot blue"></div></div>`);
+    while(cells.length < 20) cells.push(`<div class="cell"></div>`);
+
+    const wrong1 = n + rand(1,2);
+    const wrong2 = n - rand(1,2);
+    const choices = shuffle([n, wrong1, wrong2]).map(String);
+
+    return {
+      skill:"ten", tag:"🧮 Tens & Ones",
+      html:`<div class="two-cols">
+              <div>
+                <div class="prompt">How many?</div>
+                <div class="hint">Green = 10 (ten). Blue = ones.</div>
+              </div>
+              <div class="tenframe">${cells.join("")}</div>
+            </div>`,
+      choices, answer: String(n)
+    };
+  }
+
+  function qNumberPattern(){
+    const step = [1,2,5][rand(0,2)];
+    const start = rand(1,10);
+    const a = start, b = start+step, c = start+2*step;
+    const missing = start+3*step;
+    const wrongs = shuffle([missing+step, missing-step, missing+2]).slice(0,2);
+    const choices = shuffle([missing, ...wrongs]).map(String);
+    return {
+      skill:"numPat", tag:"📈 Number pattern",
+      html:`<div class="prompt">What number comes next?</div>
+            <div style="text-align:center;font-size:40px;font-weight:950;padding:10px 0">
+              ${a} , ${b} , ${c} , ?
+            </div>
+            <div class="hint">Look at the steps (+${step}).</div>`,
+      choices, answer: String(missing)
+    };
+  }
+
+  function qAdditionStory(){
+    const a = rand(1,9), b = rand(1,9);
+    const ans = a + b;
+    const wrongs = shuffle([ans+1, ans-1, ans+2, ans-2].filter(x=>x>=0 && x<=20 && x!==ans)).slice(0,2);
+    const choices = shuffle([ans, ...wrongs]).map(String);
+    return {
+      skill:"add", tag:"➕ Addition",
+      html:`<div class="prompt">Story time!</div>
+            <div style="font-size:15px;font-weight:900;line-height:1.35">
+              There are <span style="color:var(--accent)">${a}</span> apples 🍎 and <span style="color:var(--accent2)">${b}</span> more apples 🍎.<br>
+              How many apples in total?
+            </div>
+            <div class="hint">Cộng lại nhé: ${a} + ${b} = ?</div>`,
+      choices, answer: String(ans)
+    };
+  }
+
+  function qPictureGraph(){
+    const cats = [
+      {name:"Cats", icon:"🐱"},
+      {name:"Dogs", icon:"🐶"},
+      {name:"Fish", icon:"🐠"},
+    ];
+    let counts = shuffle([2,3,4,5]).slice(0,3);
+    while(new Set(counts).size !== 3) counts = shuffle([2,3,4,5]).slice(0,3);
+
+    const data = cats.map((c,i)=>({ ...c, n: counts[i] }));
+    const maxItem = data.reduce((m,x)=> x.n>m.n?x:m, data[0]);
+
+    const graphHtml = data.map(d=>{
+      const icons = Array.from({length:d.n}, ()=>`<span class="miniIcon">${d.icon}</span>`).join("");
+      return `
+        <div class="gline">
+          <div class="gleft"><span style="font-size:18px">${d.icon}</span> ${d.name}</div>
+          <div class="icons">${icons}</div>
+        </div>
+      `;
+    }).join("");
+
+    const wrongs = shuffle(data.filter(d=>d.name!==maxItem.name)).slice(0,2).map(d=>d.name);
+    const choices = shuffle([maxItem.name, ...wrongs]);
+
+    return {
+      skill:"graph", tag:"📊 Graph",
+      html:`<div class="two-cols">
+              <div>
+                <div class="prompt">Which has the most?</div>
+                <div class="hint">Nhìn số hình (icons) nhé.</div>
+              </div>
+              <div class="graph">${graphHtml}</div>
+            </div>`,
+      choices, answer: maxItem.name,
+      choiceLabels: {"Cats":"🐱 Cats","Dogs":"🐶 Dogs","Fish":"🐠 Fish"}
+    };
+  }
+
+  function qSubtraction(){
+    const total = rand(6,20);
+    const take = rand(1, Math.min(9,total));
+    const ans = total - take;
+    const wrongs = shuffle([ans+1, ans-1, ans+2, ans-2].filter(x=>x>=0 && x<=20 && x!==ans)).slice(0,2);
+    const choices = shuffle([ans, ...wrongs]).map(String);
+    return {
+      skill:"sub", tag:"➖ Subtraction",
+      html:`<div class="prompt">How many left?</div>
+            <div style="font-size:15px;font-weight:900;line-height:1.35">
+              You have <span style="color:var(--accent)">${total}</span> balloons 🎈.<br>
+              <span style="color:var(--accent2)">${take}</span> balloons fly away 💨.<br>
+              How many balloons left?
+            </div>
+            <div class="hint">${total} − ${take} = ?</div>`,
+      choices, answer: String(ans)
+    };
+  }
+
+  function qTimeOclock(){
+    const hour = rand(1,12);
+    const hourDeg = hour * 30;
+    const answer = `${hour}:00`;
+    const wrongs = shuffle([((hour%12)+1), (hour===1?12:hour-1), (hour+2>12?hour-10:hour+2)]).slice(0,2)
+      .map(h=>`${h}:00`);
+    const choices = shuffle([answer, ...wrongs]);
+
+    const ticks = Array.from({length:12}, (_,i)=>{
+      const deg = (i*30);
+      return `<div class="tick" style="transform: translate(-50%,-100%) rotate(${deg}deg);"></div>`;
+    }).join("");
+
+    const nums = Array.from({length:12}, (_,i)=>{
+      const n = i+1;
+      const deg = n*30;
+      const r = 84;
+      const x = Math.sin((deg*Math.PI)/180)*r;
+      const y = -Math.cos((deg*Math.PI)/180)*r;
+      return `<div class="num" style="transform: translate(${x}px, ${y}px) translate(-50%,-50%);">${n}</div>`;
+    }).join("");
+
+    return {
+      skill:"time", tag:"🕒 Time o’clock",
+      html:`<div class="two-cols">
+              <div>
+                <div class="prompt">What time is it?</div>
+                <div class="hint">Minute hand is always at 12 (o’clock).</div>
+              </div>
+              <div class="clock" aria-label="Clock">
+                ${ticks}
+                ${nums}
+                <div class="hand hour" style="transform: translate(-50%,-100%) rotate(${hourDeg}deg);"></div>
+                <div class="hand minute" style="transform: translate(-50%,-100%) rotate(0deg);"></div>
+                <div class="center"></div>
+              </div>
+            </div>`,
+      choices, answer
+    };
+  }
+
+  const builders = [
+    qCounting, qOrdinal, qPatterns, qTensOnes, qNumberPattern,
+    qAdditionStory, qPictureGraph, qSubtraction, qTimeOclock
+  ];
+
+  // State
+  let order = [];
+  let idx = 0;
+  let score = 0;
+  let locked = false;
+
+  // DOM
+  const startBtn = document.getElementById("startBtn");
+  const resetBtn = document.getElementById("resetBtn");
+  const welcome = document.getElementById("welcome");
+  const quiz = document.getElementById("quiz");
+  const finish = document.getElementById("finish");
+  const qTitle = document.getElementById("qTitle");
+  const qTag = document.getElementById("qTag");
+  const qBox = document.getElementById("qBox");
+  const choicesEl = document.getElementById("choices");
+  const feedback = document.getElementById("feedback");
+  const msg = document.getElementById("msg");
+  const nextBtn = document.getElementById("nextBtn");
+  const chipScore = document.getElementById("chipScore");
+  const chipQ = document.getElementById("chipQ");
+  const playAgain = document.getElementById("playAgain");
+
+  function updateChips(){
+    chipScore.textContent = `⭐ Score: ${score}`;
+    chipQ.textContent = `🧩 ${Math.min(idx+1, builders.length)} / ${builders.length}`;
+  }
+
+  function start(){
+    score = 0;
+    idx = 0;
+    locked = false;
+    order = shuffle(builders.map((_,i)=>i));
+    for(const s of skills) skillState[s.key] = false;
+
+    renderSkills();
+    setBar(0);
+    setMini("Đang chơi…");
+    welcome.style.display = "none";
+    finish.style.display = "none";
+    quiz.style.display = "block";
+    nextBtn.textContent = "Next ➜";
+    updateChips();
+    loadQuestion();
+  }
+
+  function reset(){
+    score = 0; idx = 0; locked = false; order = [];
+    for(const s of skills) skillState[s.key] = false;
+    renderSkills();
+    setBar(0);
+    setMini("Chưa bắt đầu");
+    chipScore.textContent = `⭐ Score: 0`;
+    chipQ.textContent = `🧩 0 / ${builders.length}`;
+    quiz.style.display = "none";
+    finish.style.display = "none";
+    welcome.style.display = "grid";
+  }
+
+  function loadQuestion(){
+    feedback.style.display = "none";
+    msg.textContent = "";
+    msg.className = "msg";
+
+    const q = builders[order[idx]]();
+
+    qTitle.textContent = `Question ${idx+1}`;
+    qTag.textContent = q.tag;
+    qBox.innerHTML = q.html;
+
+    setBar(Math.round((idx / builders.length) * 100));
+    updateChips();
+
+    choicesEl.innerHTML = "";
+    const labels = q.choiceLabels || {};
+    q.choices.forEach(c=>{
+      const btn = document.createElement("button");
+      btn.className = "choice";
+      btn.type = "button";
+      btn.textContent = labels[c] || c;
+      btn.onclick = ()=> pickAnswer(btn, c, q.answer, q.skill);
+      choicesEl.appendChild(btn);
+    });
+  }
+
+  function pickAnswer(btn, choice, answer, skillKey){
+    if(locked) return;
+
+    if(choice === answer){
+      locked = true;
+      btn.classList.add("correct");
+      score += 1;
+      skillState[skillKey] = true;
+      renderSkills();
+
+      feedback.style.display = "flex";
+      msg.textContent = "✅ Correct! Great job!";
+      msg.classList.add("ok");
+
+      setBar(Math.round(((idx+1) / builders.length) * 100));
+      nextBtn.textContent = (idx === builders.length - 1) ? "Finish 🏁" : "Next ➜";
+      updateChips();
+      return;
+    }
+
+    btn.classList.add("wrong");
+    feedback.style.display = "flex";
+    msg.textContent = "❌ Try again!";
+    msg.classList.add("bad");
+    nextBtn.textContent = "Try again";
+    nextBtn.onclick = ()=>{
+      document.querySelectorAll(".choice").forEach(x=>x.classList.remove("wrong"));
+      feedback.style.display = "none";
+      msg.textContent = "";
+      msg.className = "msg";
+      nextBtn.textContent = "Next ➜";
+      nextBtn.onclick = onNext;
+    };
+  }
+
+  function onNext(){
+    if(!locked){
+      feedback.style.display = "flex";
+      msg.textContent = "👉 Choose an answer first!";
+      msg.className = "msg bad";
+      return;
+    }
+    locked = false;
+    idx += 1;
+    if(idx >= builders.length) showFinish();
+    else loadQuestion();
+  }
+
+  function showFinish(){
+    quiz.style.display = "none";
+    finish.style.display = "grid";
+
+    const total = builders.length;
+    const pct = Math.round((score/total)*100);
+
+    let level = "Needs Practice 💪";
+    let advice = "Con ôn lại vài kỹ năng nhé. Chơi lại 1 lần nữa là giỏi ngay!";
+    if(score >= 8){
+      level = "Excellent 🌟";
+      advice = "Con làm rất tốt! Cô khen con 🎉";
+    } else if(score >= 6){
+      level = "Good 👍";
+      advice = "Con làm tốt rồi! Ôn thêm chút nữa là xuất sắc.";
+    }
+
+    document.getElementById("finalTitle").textContent = `Finished! • ${level}`;
+    document.getElementById("finalText").innerHTML =
+      `Điểm của con: <b>${score}/${total}</b> (${pct}%)<br>${advice}`;
+
+    setMini(`Hoàn thành • ${score}/${total}`);
+    setBar(100);
+    chipQ.textContent = `🧩 ${total} / ${total}`;
+    chipScore.textContent = `⭐ Score: ${score}`;
+  }
+
+  startBtn.onclick = start;
+  resetBtn.onclick = reset;
+  nextBtn.onclick = onNext;
+  playAgain.onclick = start;
+
+  renderSkills();
+  reset();
+</script>
+</body>
+</html>
