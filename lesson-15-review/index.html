@@ -4,8 +4,9 @@
   <link rel="stylesheet" href="../assets/brand.css">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Lesson 15 • First semester review </title>
+  <title>Lesson 15 • First semester review</title>
   <style>
+    /* CSS Reset & Base Styles */
     :root{
       --bg1:#eaf3ff;
       --bg2:#f6fff2;
@@ -21,10 +22,11 @@
       --shadow2: 0 10px 25px rgba(15, 23, 42, .08);
       --radius: 20px;
     }
-    *{box-sizing:border-box}
+    * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
+    html, body { margin: 0; padding: 0; width: 100%; height: 100%; }
+    
     body{
-      margin:0;
-      font-family: "Comic Sans MS", "Chalkboard SE", system-ui, -apple-system, sans-serif; /* Kid friendly font */
+      font-family: "Comic Sans MS", "Chalkboard SE", "Short Stack", system-ui, -apple-system, sans-serif; /* Kid friendly font */
       color:var(--text);
       min-height:100vh;
       background:
@@ -34,6 +36,13 @@
         linear-gradient(135deg, var(--bg1), var(--bg2));
       overflow-x:hidden;
     }
+
+    /* Layout & Components */
+    .oodles-logo {
+        position: fixed; top: 10px; left: 10px; z-index: 0; opacity: 0.5; pointer-events: none;
+        font-size: 24px; font-weight: bold; color: rgba(37,99,235,0.3);
+    }
+    
     .wrap{
       max-width: 1100px;
       margin: 0 auto;
@@ -42,6 +51,7 @@
       grid-template-columns: 360px 1fr;
       gap: 16px;
       min-height: 100vh;
+      position: relative; z-index: 1;
     }
     .card{
       background: var(--card);
@@ -278,15 +288,15 @@
     }
     .tick{
       position:absolute; left:50%; top:50%;
-      width:2px; height:10px;
-      background: rgba(15,23,42,.25);
-      transform-origin: center calc(100% + 75px);
-      border-radius: 6px;
+      width:3px; height:8px;
+      background: rgba(15,23,42,.4);
+      border-radius: 2px;
     }
     .num{
       position:absolute; left:50%; top:50%;
       transform: translate(-50%,-50%);
-      font-weight: 900; color: rgba(15,23,42,.75); font-size: 14px;
+      font-weight: 900; color: rgba(15,23,42,.8); font-size: 15px;
+      line-height: 1;
     }
 
     /* Ten frame */
@@ -392,6 +402,7 @@
 
 <body>
   <img src="../assets/logo-oodles-math.png" class="oodles-logo">
+  <div class="oodles-logo">OODLES MATH</div>
   <div class="wrap">
     <!-- LEFT -->
     <section class="card left">
@@ -843,9 +854,15 @@
     const s = new Set([hour]);
     while(s.size < 3) s.add(rand(1,12));
     
-    const ticks = Array.from({length:12}, (_,i)=> `<div class="tick" style="transform: translate(-50%,-100%) rotate(${i*30}deg);"></div>`).join("");
+    // Updated Ticks logic: Rotate then translate to rim
+    const ticks = Array.from({length:12}, (_,i)=> {
+        const deg = i * 30;
+        return `<div class="tick" style="transform: translate(-50%, -50%) rotate(${deg}deg) translateY(-88px)"></div>`;
+    }).join("");
+
+    // Updated Nums logic: Slightly smaller radius
     const nums = Array.from({length:12}, (_,i)=>{
-      const deg = (i+1)*30, r = 75;
+      const deg = (i+1)*30, r = 68;
       const x = Math.sin(deg*Math.PI/180)*r, y = -Math.cos(deg*Math.PI/180)*r;
       return `<div class="num" style="transform: translate(${x}px, ${y}px) translate(-50%,-50%);">${i+1}</div>`;
     }).join("");
@@ -856,8 +873,8 @@
       explanation: `The big hand is on 12. The small hand is on ${hour}. It is <b>${hour}:00</b>.`,
       html:`<div class="two-cols">
               <div>
-                 <div class="prompt-row"><div class="prompt">What time is it?</div><div class="speak-btn" onclick="speak('What time is it?')">🔊</div></div>
-                 <div class="hint">The big hand is on 12.</div>
+                  <div class="prompt-row"><div class="prompt">What time is it?</div><div class="speak-btn" onclick="speak('What time is it?')">🔊</div></div>
+                  <div class="hint">The big hand is on 12.</div>
               </div>
               <div class="clock">
                 ${ticks}${nums}
@@ -1098,6 +1115,8 @@
   function endBonusGame(){
     clearInterval(bonusTimerInterval);
     cancelAnimationFrame(bonusLoop);
+    // Use a custom modal or just simple UI update instead of alert to be cleaner
+    // But for now, alert is okay, or we can just close it.
     alert(`Time's up! ⏰\nYou popped ${bonusScore} bubbles!`);
     closeBonus();
   }
