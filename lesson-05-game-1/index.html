@@ -1,812 +1,878 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <link rel="stylesheet" href="../assets/brand.css">
+    <link rel="stylesheet" href="../assets/brand.css">
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Place Value Game: Tens and Ones</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Place Value Party!</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
+        /* === CẤU HÌNH CHUNG === */
         body {
-            font-family: 'Inter', sans-serif;
-            /* === THAY ĐỔI: Quay lại nền vàng/cam === */
-            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%); 
+            font-family: 'Fredoka', sans-serif;
+            background-color: #87CEEB;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0) 20%),
+                radial-gradient(circle at 90% 80%, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0) 20%);
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            overflow: hidden; 
+            overflow: hidden;
+            touch-action: none;
+            user-select: none;
         }
 
+        #game-container:not(.hidden) { display: flex; }
         #game-container {
-            width: 100%;
-            max-width: 950px; 
-            height: 95vh; 
-            display: flex;
+            width: 98%;
+            max-width: 1000px;
+            height: 98vh;
             flex-direction: column;
-            padding: 1.5rem; 
-            background-color: #ffffff;
-            border-radius: 2.5rem; 
-            /* THAY ĐỔI: Giảm độ phức tạp của bóng đổ */
-            box-shadow: 0 15px 30px -10px rgba(0, 0, 0, 0.15); 
-        }
-        
-        #game-container h1 {
-            color: #E91E63; 
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.1); 
+            padding: 0.5rem;
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 1.5rem;
+            box-shadow: 0 8px 0px #3b82f6;
+            border: 4px solid #3b82f6;
+            position: relative;
         }
 
         .grid-area {
-            flex: 1 1 auto;
-            min-height: 0; 
+            flex: 1;
             display: flex;
-            flex-direction: column; 
-            /* THAY ĐỔI: Giảm khoảng cách */
-            gap: 1rem; 
-            margin-bottom: 1rem;
+            flex-direction: column;
+            gap: 0.5rem;
+            min-height: 0;
+            margin-bottom: 0.5rem;
         }
 
-        @media (min-width: 768px) { 
-            .grid-area {
-                flex-direction: row; 
-            }
-        }
-        
-        .item-column, .drop-chart-container {
-            background-color: #fcfcfc; 
-            border-radius: 1.5rem; 
-            padding: 1rem; 
-            /* === THAY ĐỔI: Gỡ bỏ bóng đổ bên trong === */
-            /* box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.06); */ 
-        }
-
-        .drop-column, .item-column {
-            flex: 1; 
-            min-height: 150px; 
-            /* THAY ĐỔI: Ẩn thanh cuộn */
-            overflow-y: hidden; 
-        }
         @media (min-width: 768px) {
-            .drop-column, .item-column {
-                min-height: 250px; 
+            .grid-area {
+                flex-direction: row;
+                gap: 1rem;
+                padding: 1rem;
             }
         }
-        
-        .item-column h2, .drop-chart-container h2 {
-            color: #673AB7; /* Tím */
-            font-size: 1.25rem; /* text-xl */
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.05);
+
+        .panel {
+            background-color: #f0f9ff;
+            border-radius: 1rem;
+            border: 3px solid #bfdbfe;
+            padding: 0.5rem;
+            display: flex;
+            flex-direction: column;
+            position: relative;
         }
 
-        .draggable {
-            cursor: grab;
-            user-select: none;
-            transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+        .source-panel {
+            flex: 1;
+            background-color: #fff7ed;
+            border-color: #fed7aa;
+            z-index: 20;
         }
-        .draggable:active {
-            cursor: grabbing;
-            transform: scale(1.15) rotate(5deg); 
-            /* THAY ĐỔI: Giảm độ phức tạp của bóng đổ */
-            box-shadow: 0 10px 15px -5px rgba(0, 0, 0, 0.15); 
-            z-index: 50;
-            opacity: 0.8;
+
+        #item-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-content: flex-start;
+            gap: 10px;
+            overflow-y: auto;
+            flex: 1;
+            padding: 10px;
+        }
+
+        .target-panel {
+            flex: 1.5;
+            background-color: #f0fdf4;
+            border-color: #bbf7d0;
+        }
+
+        .chart-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+            height: 100%;
         }
 
         .drop-column {
-            border: 4px dashed #FF6F00; /* Viền nét đứt cam */
-            transition: background-color 0.2s ease, border-color 0.2s ease, border-style 0.2s ease;
+            background-color: rgba(255, 255, 255, 0.6);
+            border: 3px dashed #cbd5e1;
+            border-radius: 1rem;
             display: flex;
             flex-direction: column;
             align-items: center;
+            padding: 0.5rem;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .drop-column.highlight {
+            background-color: #fffbeb;
+            border-color: #fbbf24;
+            transform: scale(1.02);
         }
 
         .drop-area {
-            display: flex;
-            flex-direction: row;
-            flex-wrap: wrap;
-            justify-content: center;
-            align-items: start;
+            flex: 1;
             width: 100%;
-            height: 100%; 
-            min-height: 50px; 
-            padding: 8px; 
-        }
-
-        #tens-column {
-            background-color: #fefce8; /* === THAY ĐỔI: Quay lại màu vàng nhạt === */
-        }
-        #ones-column {
-            background-color: #f0fdf4; /* === THAY ĐỔI: Quay lại màu xanh nhạt === */
-        }
-
-        .drag-over {
-            background-color: #FFF3E0; 
-            border-color: #FF6F00;
-            border-style: solid; 
-        }
-        
-        #item-container {
-            min-height: 100px; 
-            flex-wrap: wrap; 
-            justify-content: center;
-            align-items: center;
-            gap: 0.5rem; 
-        }
-
-        /* === THAY ĐỔI: Thu nhỏ khối Tens === */
-        .tens-bundle {
-            background-color: #fef9c3; 
-            border: 3px solid #f59e0b; 
-            border-radius: 0.75rem; 
             display: flex;
             flex-wrap: wrap;
-            width: 5.0rem; /* Nhỏ hơn */
-            height: 5.0rem; /* Nhỏ hơn */
-            font-size: 0.8rem; /* Nhỏ hơn */
+            align-content: flex-start;
             justify-content: center;
-            align-items: center;
-            padding: 0.35rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        }
-        @media (min-width: 640px) { 
-            .tens-bundle {
-                width: 5.5rem; /* Nhỏ hơn */
-                height: 5.5rem; /* Nhỏ hơn */
-                font-size: 1.0rem; /* Nhỏ hơn */
-            }
+            gap: 5px;
+            padding-top: 5px;
         }
 
-        /* === THAY ĐỔI: Thu nhỏ khối Ones === */
-        .ones-item {
-            background-color: #ecfdf5; 
-            border: 3px solid #16a34a; 
-            border-radius: 0.5rem; 
-            font-size: 1.0rem; /* Nhỏ hơn */
-            width: 2.0rem; /* Nhỏ hơn */
-            height: 2.0rem; /* Nhỏ hơn */
+        .draggable-item {
+            touch-action: none;
+            cursor: grab;
+            transition: transform 0.1s;
+        }
+        
+        .dragging {
+            opacity: 0.8;
+            transform: scale(1.1) rotate(5deg);
+            z-index: 1000 !important;
+            cursor: grabbing;
+            pointer-events: none;
+        }
+
+        .tens-bundle {
+            background-color: #fffbeb;
+            border: 3px solid #f59e0b;
+            box-shadow: 0 4px 0 #d97706;
+            border-radius: 0.8rem;
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 2px;
+            padding: 4px;
+            width: auto; 
+            max-width: 100%;
+            align-items: center;
+            justify-items: center;
+        }
+
+        .tens-bundle span {
+            font-size: 1.2rem;
+            line-height: 1;
             display: flex;
             justify-content: center;
             align-items: center;
-            margin: 0.125rem; /* Nhỏ hơn */
-            box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1);
         }
-        @media (min-width: 640px) { 
-            .ones-item {
-                font-size: 1.2rem; /* Nhỏ hơn */
-                width: 2.2rem; /* Nhỏ hơn */
-                height: 2.2rem; /* Nhỏ hơn */
-            }
+
+        .ones-item {
+            background-color: #f0fdf4;
+            border: 2px solid #22c55e;
+            box-shadow: 0 3px 0 #15803d;
+            border-radius: 0.5rem;
+            width: 2.5rem;
+            height: 2.5rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.4rem;
         }
-        
-        /* === THAY ĐỔI: Thu nhỏ nút đáp án === */
-        .answer-btn {
-            transition: transform 0.1s ease, background-color 0.2s ease, box-shadow 0.2s ease;
-            padding: 0.5rem 1.2rem; /* Nhỏ hơn */
-            font-size: 1.125rem; /* Nhỏ hơn */
-            font-weight: 700; 
-            border-radius: 1rem; 
+
+        .placeholder {
+            background-color: rgba(0,0,0,0.05);
+            border-radius: 10px;
+        }
+
+        .btn-game {
+            border: none;
             color: white;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.15); 
-            
-            /* === BẮT ĐẦU SỬA LỖI === */
-            position: relative; /* Đảm bảo z-index hoạt động */
-            z-index: 10;        /* Đưa nút lên trên */
-            /* === KẾT THÚC SỬA LỖI === */
-        }
-        .answer-btn:nth-child(1) { background-color: #2196F3; } /* Blue */
-        .answer-btn:nth-child(2) { background-color: #E91E63; } /* Pink */
-        .answer-btn:nth-child(3) { background-color: #9C27B0; } /* Purple */
-
-        .answer-btn:hover:not(:disabled) {
-            transform: translateY(-4px) scale(1.05); 
-            /* THAY ĐỔI: Giảm độ phức tạp của bóng đổ */
-            box-shadow: 0 10px 15px -5px rgba(0, 0, 0, 0.15);
-        }
-        .answer-btn:disabled {
-            opacity: 0.6; 
-            cursor: not-allowed;
-            transform: none; 
-            box-shadow: none;
-        }
-        .btn-correct {
-            background-color: #4CAF50 !important; /* Green */
-            transform: scale(1.08) !important; 
-            box-shadow: 0 8px 15px -3px rgba(76, 175, 80, 0.5) !important;
-        }
-        .btn-wrong {
-             background-color: #F44336 !important; /* Red */
-        }
-
-        #feedback {
-            font-size: 1.5rem; 
-            font-weight: 800; 
-            min-height: 2.5rem; 
-            text-shadow: 1px 1px 3px rgba(0,0,0,0.2); 
-        }
-        
-        .fade-in {
-            animation: fadeIn 0.5s ease-in-out;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(15px); } 
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .mystery-box-item {
-            /* THAY ĐỔI: Hiệu ứng pulse đơn giản hơn */
-            animation: pulseSimple 1.5s infinite ease-in-out; 
-            font-size: 6rem; 
-            /* THÊM: Cần thiết cho điểm bật lên */
+            font-weight: 700;
+            padding: 0.8rem 1.2rem;
+            border-radius: 1rem;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.2s;
             position: relative;
+            top: 0;
+            box-shadow: 0 5px 0 rgba(0,0,0,0.2);
+            margin: 0.3rem;
+            min-width: 70px;
         }
-        /* THAY ĐỔI: Hiệu ứng pulse đơn giản hơn */
-        @keyframes pulseSimple {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
+        
+        .btn-game:active { top: 4px; box-shadow: 0 1px 0 rgba(0,0,0,0.2); }
+        .btn-blue { background-color: #3b82f6; }
+        .btn-pink { background-color: #ec4899; }
+        .btn-purple { background-color: #a855f7; }
+
+        .btn-game.locked {
+            background-color: #d1d5db;
+            color: #9ca3af;
+            box-shadow: none;
+            cursor: not-allowed;
+            top: 4px;
         }
 
-        /* XÓA @keyframes pulse cũ
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); opacity: 1;}
-            50% { transform: scale(1.15); opacity: 0.8;} 
+        .btn-wrong {
+            background-color: #ef4444 !important;
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: scale(0.9);
         }
-        */
+
+        #dino-overlay:not(.hidden), #start-overlay:not(.hidden), #completion-overlay:not(.hidden) {
+            display: flex;
+        }
+
+        #dino-overlay {
+            position: fixed;
+            inset: 0;
+            background-color: rgba(255, 255, 255, 0.98);
+            z-index: 100;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
         
+        #dino-canvas {
+            border-bottom: 6px solid #8b5cf6;
+            background-color: #87CEEB; /* Bầu trời xanh */
+            width: 100%;
+            max-width: 600px;
+            height: 250px;
+            border-radius: 1rem;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .dino-info {
+            font-size: 1.5rem;
+            color: #555;
+            margin-bottom: 1rem;
+            text-align: center;
+            font-weight: bold;
+        }
+
         #start-overlay {
-            background-color: rgba(255, 255, 255, 0.98); 
-        }
-        #start-btn {
-            background-color: #FF6F00; 
-            border: 3px solid #FFD700;
-            box-shadow: 0 8px 15px -3px rgba(255, 111, 0, 0.4);
-        }
-        #start-btn:hover {
-            background-color: #F57C00; 
-            transform: scale(1.1);
+            background: rgba(255, 255, 255, 0.98);
+            position: fixed;
+            inset: 0;
+            z-index: 200;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
         }
         
-        #mystery-box-content {
-            padding: 2rem; 
-            border-radius: 1.5rem;
-            box-shadow: 0 15px 30px -5px rgba(0, 0, 0, 0.2);
-            border: 3px solid #9C27B0; 
+        .start-btn-large {
+            background: linear-gradient(to bottom, #facc15, #ca8a04);
+            border: 4px solid #fff;
+            padding: 1rem 3rem;
+            font-size: 2rem;
+            border-radius: 99px;
+            color: white;
+            font-weight: 900;
+            box-shadow: 0 8px 0 #a16207;
+            cursor: pointer;
         }
-        #mystery-box-content h2 {
-            font-size: 2rem; 
-            color: #9C27B0; 
-        }
-        #mystery-box-content .mystery-box-item {
-            font-size: 5rem; 
-        }
-        @media (min-width: 640px) { 
-            #mystery-box-content h2 {
-                font-size: 2.5rem; 
-            }
-            #mystery-box-content .mystery-box-item {
-                font-size: 6rem; 
-            }
-        }
-
-        #completion-message {
-            color: #4CAF50;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
-            font-size: 2.5rem;
-        }
-        #completion-message span {
-            color: #FF6F00; 
-        }
-
-        /* === THÊM: CSS CHO ĐIỂM BẬT LÊN === */
-        .points-display {
-            font-size: 2.5rem; /* text-4xl */
-            font-weight: 900; /* font-black */
-            color: #f59e0b; /* text-amber-500 */
-            text-shadow: 1px 1px 0px #b45309, 2px 2px 0px #b45309; /* Hiệu ứng 3D */
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%) scale(0.5);
-            opacity: 0;
-            animation: popUpPoints 0.5s ease-out forwards;
-            pointer-events: none; /* Không cho nhấp vào */
-        }
-        @keyframes popUpPoints {
-            0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
-            60% { transform: translate(-50%, -65%) scale(1.2); opacity: 1; }
-            100% { transform: translate(-50%, -70%) scale(1); opacity: 1; }
-        }
-        /* Thêm class để làm mờ emoji */
-        .prize-emoji {
-            transition: opacity 0.3s ease-out;
-        }
-        /* === KẾT THÚC THÊM CSS === */
+        .start-btn-large:active { transform: translateY(4px); box-shadow: 0 4px 0 #a16207; }
 
     </style>
 </head>
-<body class="text-gray-800">
-   <img src="../assets/logo-oodles-math.png" class="oodles-logo"> 
+<body class="text-gray-700">
+    <img src="../assets/logo-oodles-math.png" class="oodles-logo">
     <div id="start-overlay">
-        <button id="start-btn" class="bg-green-500 hover:bg-green-600 text-white font-bold py-4 px-10 rounded-full text-3xl shadow-lg transition duration-200 transform hover:scale-105">
-            Start Game
-        </button>
+        <h1 class="text-5xl md:text-6xl font-black mb-6 text-center text-blue-500 tracking-wider">
+            Place Value<br><span class="text-yellow-400">Party!</span>
+        </h1>
+        <div class="text-6xl mb-8">🦖🦕</div>
+        <button id="start-btn" class="start-btn-large">PLAY GAME ▶</button>
     </div>
 
-    <div id="game-container" class="w-full max-w-4xl mx-auto p-4 sm:p-6 md:p-8 rounded-2xl shadow-xl hidden">
-        
-        <!-- THAY ĐỔI: Giảm lề -->
-        <h1 class="text-3xl sm:text-4xl font-bold text-center text-blue-600 mb-1">
-            Place Value: Tens & Ones
-        </h1>
-        
-        <!-- THAY ĐỔI: Giảm lề -->
-        <div class="text-xl font-bold text-center text-purple-600 mb-2">
-            Score: <span id="score-display">0</span>
+    <div id="game-container" class="hidden">
+        <div class="flex justify-between items-center mb-1 px-2">
+            <h1 class="text-xl sm:text-2xl font-bold flex items-center gap-2">
+                🌟 Tens & Ones
+            </h1>
+            <div class="bg-yellow-100 border-2 border-yellow-400 rounded-full px-3 py-1 text-lg font-bold text-yellow-600">
+                Score: <span id="score-display">0</span>
+            </div>
         </div>
-        
-        <!-- THAY ĐỔI: Giảm lề -->
-        <p id="instruction" class="text-lg sm:text-xl text-center text-gray-700 mb-2 min-h-[3rem]">
-            Drag the blocks to the correct column!
+
+        <p id="instruction" class="text-center text-lg sm:text-xl text-blue-600 font-bold mb-1 h-8">
+            Drag ALL blocks to the chart! 👇
         </p>
 
         <div class="grid-area">
-            
-            <div class="item-column p-2 sm:p-4 shadow-inner">
-                <!-- THAY ĐỔI: Giảm lề -->
-                <h2 class="text-lg font-semibold text-center mb-1 text-indigo-600">Blocks to Drag</h2>
-                <!-- THAY ĐỔI: Giảm khoảng cách -->
-                <div id="item-container" class="flex flex-wrap justify-center items-center gap-1 sm:gap-2">
+            <div class="panel source-panel">
+                <h2 class="text-center text-lg font-bold text-orange-500 mb-1">My Blocks 📦</h2>
+                <div id="item-container"></div>
+                <div class="mt-auto pt-2 border-t-2 border-orange-200">
+                    <h2 class="text-center text-base font-bold text-purple-500 mb-1">How many? (Drag first!)</h2>
+                    <div id="options-container" class="flex justify-center flex-wrap gap-2"></div>
                 </div>
-                
-                <!-- THAY ĐỔI: Giảm lề -->
-                <div class="mt-2">
-                    <!-- THAY ĐỔI: Giảm lề -->
-                    <h3 class="text-lg font-semibold text-center mb-1 text-indigo-600">So... how many are there in all?</h3>
-                    <!-- THAY ĐỔI: Giảm khoảng cách -->
-                    <div id="options-container" class="flex justify-center flex-wrap gap-1 sm:gap-2">
-                    </div>
-                </div>
-
             </div>
 
-            <div class="drop-chart-container flex-1 p-2 sm:p-4 shadow-inner">
-                <!-- THAY ĐỔI: Giảm lề -->
-                <h2 class="text-lg font-semibold text-center mb-1 text-indigo-600">Place Value Chart</h2>
-                <div class="grid grid-cols-2 gap-2 sm:gap-4 h-full">
-                    <div id="tens-column" data-column="tens" class="drop-column p-1 sm:p-2 rounded-lg">
-                        <h3 class="text-xl font-bold text-yellow-500 mb-1">Tens</h3>
-                        <div id="tens-drop-area" class="drop-area">
-                        </div>
+            <div class="panel target-panel">
+                <h2 class="text-center text-lg font-bold text-green-600 mb-1">Place Value Chart 🎯</h2>
+                <div class="chart-grid">
+                    <div id="tens-column" class="drop-column">
+                        <div class="text-xl font-black text-yellow-500">Tens</div>
+                        <div id="tens-drop-area" class="drop-area"></div>
                     </div>
-                    <div id="ones-column" data-column="ones" class="drop-column p-1 sm:p-2 rounded-lg">
-                        <h3 class="text-xl font-bold text-green-500 mb-1">Ones</h3>
-                        <div id="ones-drop-area" class="drop-area">
-                        </div>
+                    <div id="ones-column" class="drop-column">
+                        <div class="text-xl font-black text-green-500">Ones</div>
+                        <div id="ones-drop-area" class="drop-area"></div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- THAY ĐỔI: Giảm lề -->
-        <div class="mt-2 text-center">
-            <div id="feedback" class="mb-2"></div>
-            <button id="next-btn" class="hidden bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-6 rounded-full text-lg shadow-lg transition duration-200">
-                Next Question
-            </button>
-            <div id="completion-message" class="hidden text-2xl font-bold text-green-600 p-4 text-center fade-in">
-                🎉 Congratulations! You finished the game! Great job! 🎉
-            </div>
+        <div class="text-center h-8 flex justify-center items-center">
+            <div id="feedback" class="text-xl font-bold animate-bounce"></div>
         </div>
     </div>
 
-    <div id="mystery-box-overlay" class="hidden fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50 p-4">
-        <div id="mystery-box-content" class="bg-white p-6 sm:p-8 rounded-2xl shadow-xl text-center transform transition-all scale-95 opacity-0">
-            <!-- THAY ĐỔI: Tiêu đề hộp quà -->
-            <h2 class="text-2xl sm:text-3xl font-bold mb-6 text-purple-600">Choose a box to get points!</h2>
-            
-            <div id="mystery-box-container" class="flex justify-center gap-4 sm:gap-8">
-                 <div class="mystery-box-item text-7xl sm:text-8xl cursor-pointer transition-transform hover:scale-110" data-box="1">
-                    <!-- THAY ĐỔI: Bọc emoji trong span -->
-                    <span class="prize-emoji">🎁</span>
-                </div>
-                <div class="mystery-box-item text-7xl sm:text-8xl cursor-pointer transition-transform hover:scale-110" data-box="2">
-                    <span class="prize-emoji">🎁</span>
-                </div>
-                <div class="mystery-box-item text-7xl sm:text-8xl cursor-pointer transition-transform hover:scale-110" data-box="3">
-                    <span class="prize-emoji">🎁</span>
-                </div>
-            </div>
-
-            <!-- THAY ĐỔI: Hướng dẫn -->
-            <p class="text-lg mt-4">Click one box to get your points!</p>
-        </div>
+    <div id="dino-overlay" class="hidden">
+        <h2 class="text-4xl font-black text-green-600 mb-2">GO DINO GO!</h2>
+        <p class="dino-info">Jump over obstacles! 🌲🥚<br><span class="text-sm">(Tap or Space to Jump)</span></p>
+        <canvas id="dino-canvas" width="600" height="250"></canvas>
+        <div id="dino-score" class="text-3xl font-black mt-4 text-orange-500">Score: 0</div>
+        <button id="start-dino-btn" class="mt-6 start-btn-large text-xl px-8 py-3">START RUNNING!</button>
     </div>
 
+    <div id="completion-overlay" class="hidden fixed inset-0 bg-white/95 z-50 flex flex-col justify-center items-center p-4 text-center">
+        <div class="text-8xl mb-4">🏆</div>
+        <h1 class="text-5xl font-black text-yellow-500 mb-4">YOU WON!</h1>
+        <div class="text-4xl font-bold text-blue-600 mb-8">Final Score: <span id="final-score">0</span></div>
+        <button id="play-again-btn" class="start-btn-large text-2xl px-12 py-4">Play Again ↺</button>
+    </div>
 
     <script>
         const questions = [
-            { num: 10, item: '🍎', name: 'apple', options: [10, 11, 12] },
-            { num: 11, item: '⭐', name: 'star', options: [11, 10, 12] },
-            { num: 12, item: '🚗', name: 'car', options: [12, 13, 11] },
-            { num: 13, item: '🎈', name: 'balloon', options: [13, 12, 14] },
-            { num: 14, item: '🍪', name: 'cookie', options: [14, 15, 13] },
-            { num: 15, item: '🐟', name: 'fish', options: [15, 14, 16] },
-            { num: 16, item: '🦋', name: 'butterfly', options: [16, 17, 15] },
-            { num: 17, item: '✏️', name: 'pencil', options: [17, 16, 18] },
-            { num: 18, item: '🧸', name: 'teddy bear', options: [18, 19, 17] },
-            { num: 19, item: '🌸', name: 'flower', options: [19, 18, 20] },
-            { num: 20, item: '⚽', name: 'soccer ball', options: [20, 19, 10] }
+            { num: 12, item: '🍎', options: [12, 11, 21] },
+            { num: 15, item: '⭐', options: [15, 14, 51] },
+            { num: 13, item: '🚗', options: [13, 31, 14] },
+            { num: 21, item: '🍪', options: [21, 12, 20] },
+            { num: 24, item: '🎈', options: [24, 42, 25] },
+            { num: 11, item: '🐱', options: [11, 10, 12] },
+            { num: 22, item: '🐶', options: [22, 21, 23] },
+            { num: 23, item: '🌸', options: [23, 32, 24] },
+            { num: 25, item: '⚽', options: [25, 24, 26] },
+            { num: 30, item: '🍔', options: [30, 3, 13] }
         ];
 
-        let currentQuestionIndex = 0;
-        let draggedElement = null;
+        let currentQIndex = 0;
         let score = 0;
+        let totalItemsToDrag = 0;
+        let droppedItemsCount = 0;
         let soundStarted = false;
-        
-        const correctSound = new Tone.PolySynth(Tone.Synth, {
-            oscillator: { type: 'sine' }, 
-            envelope: { attack: 0.01, decay: 0.1, sustain: 0.1, release: 0.2 }
-        }).toDestination();
 
-        const wrongSound = new Tone.PolySynth(Tone.Synth, {
-            oscillator: { type: 'sawtooth' }, 
-            envelope: { attack: 0.01, decay: 0.2, sustain: 0, release: 0.2 }
-        }).toDestination();
+        const els = {
+            game: document.getElementById('game-container'),
+            itemContainer: document.getElementById('item-container'),
+            tensDrop: document.getElementById('tens-drop-area'),
+            onesDrop: document.getElementById('ones-drop-area'),
+            options: document.getElementById('options-container'),
+            feedback: document.getElementById('feedback'),
+            score: document.getElementById('score-display'),
+            instruction: document.getElementById('instruction'),
+            dinoOverlay: document.getElementById('dino-overlay'),
+            completionOverlay: document.getElementById('completion-overlay'),
+            finalScore: document.getElementById('final-score'),
+            startOverlay: document.getElementById('start-overlay')
+        };
 
-        const prizeSound = new Tone.PolySynth(Tone.Synth, { 
-            oscillator: { type: 'triangle' }, 
-            envelope: { attack: 0.01, decay: 0.1, sustain: 0.2, release: 0.3 }
-        }).toDestination();
+        const sounds = {
+            pop: new Tone.Synth({ oscillator: { type: 'sine' }, envelope: { attack: 0.01, decay: 0.1 } }).toDestination(),
+            correct: new Tone.PolySynth(Tone.Synth).toDestination(),
+            wrong: new Tone.Synth({ oscillator: { type: 'sawtooth' } }).toDestination(),
+            jump: new Tone.Synth({ oscillator: { type: 'square' } }).toDestination(),
+            crash: new Tone.NoiseSynth({ noise: { type: 'brown' }, envelope: { decay: 0.3 } }).toDestination(),
+            win: new Tone.PolySynth(Tone.Synth).toDestination()
+        };
+        const play = (s) => { if(soundStarted) try { 
+            if(s==='correct') sounds.correct.triggerAttackRelease(['C5','E5','G5'], '8n');
+            else if(s==='wrong') sounds.wrong.triggerAttackRelease('A2', '8n');
+            else if(s==='jump') sounds.jump.triggerAttackRelease('C4', '16n');
+            else if(s==='crash') sounds.crash.triggerAttackRelease('8n');
+            else sounds.pop.triggerAttackRelease('E5', '32n');
+        } catch(e){} };
 
-        const clickSound = new Tone.Synth({
-            oscillator: { type: 'triangle' }, 
-            envelope: { attack: 0.005, decay: 0.05, sustain: 0, release: 0.1 }
-        }).toDestination();
-        
-        const dropSuccessSound = new Tone.Synth({
-            oscillator: { type: 'triangle' }, 
-            envelope: { attack: 0.005, decay: 0.05, sustain: 0, release: 0.1 }
-        }).toDestination();
-        
-        const dropFailSound = new Tone.Synth({
-            oscillator: { type: 'square' }, 
-            envelope: { attack: 0.01, decay: 0.1, sustain: 0, release: 0.1 }
-        }).toDestination();
-        
-        const nextSound = new Tone.Synth({
-            oscillator: { type: 'sine' },
-            envelope: { attack: 0.005, decay: 0.05, sustain: 0, release: 0.1 }
-        }).toDestination();
-
-
-        function playSound(type) {
-            if (!soundStarted) return;
-            try {
-                if (type === 'correct') {
-                    correctSound.triggerAttackRelease('C5', '16n', Tone.now());
-                    correctSound.triggerAttackRelease('E5', '16n', Tone.now() + 0.05);
-                    correctSound.triggerAttackRelease('G5', '16n', Tone.now() + 0.1);
-                    correctSound.triggerAttackRelease('B5', '16n', Tone.now() + 0.15);
-                } else if (type === 'wrong') {
-                    wrongSound.triggerAttackRelease('G3', '8n', Tone.now());
-                    wrongSound.triggerAttackRelease('C3', '8n', Tone.now() + 0.1);
-                } else if (type === 'prize') {
-                    const now = Tone.now();
-                    prizeSound.triggerAttackRelease(['C5', 'G5'], '16n', now);
-                    prizeSound.triggerAttackRelease(['E5', 'C6'], '16n', now + 0.15);
-                    prizeSound.triggerAttackRelease(['G5', 'E6'], '16n', now + 0.3);
-                    // THAY ĐỔI: Nốt cuối hoành tráng hơn
-                    prizeSound.triggerAttackRelease(['C6', 'G6'], '8n', now + 0.45);
-                } else if (type === 'click') {
-                    clickSound.triggerAttackRelease('C5', '16n', Tone.now()); 
-                } else if (type === 'drop-success') {
-                    dropSuccessSound.triggerAttackRelease('A5', '16n', Tone.now());
-                } else if (type === 'drop-fail') {
-                    dropFailSound.triggerAttackRelease('C3', '16n', Tone.now());
-                } else if (type === 'next') {
-                    nextSound.triggerAttackRelease('E4', '16n', Tone.now());
-                }
-            } catch (e) {
-                console.error("Tone.js error:", e);
-            }
+        // === GAME FLOW ===
+        function resetGame() {
+            currentQIndex = 0;
+            score = 0;
+            els.score.innerText = '0';
+            els.completionOverlay.classList.add('hidden');
+            els.dinoOverlay.classList.add('hidden');
+            els.game.classList.remove('hidden');
+            questions.sort(() => Math.random() - 0.5);
+            loadQuestion(0);
         }
 
-        const gameContainer = document.getElementById('game-container');
-        const instructionEl = document.getElementById('instruction');
-        const itemContainer = document.getElementById('item-container');
-        const tensColumn = document.getElementById('tens-column');
-        const onesColumn = document.getElementById('ones-column');
-        const optionsContainer = document.getElementById('options-container');
-        const feedbackEl = document.getElementById('feedback');
-        const nextBtn = document.getElementById('next-btn');
-        const completionMessage = document.getElementById('completion-message');
-        const scoreDisplay = document.getElementById('score-display');
-        
-        const mysteryBoxOverlay = document.getElementById('mystery-box-overlay');
-        const mysteryBoxContent = document.getElementById('mystery-box-content');
-        const mysteryBoxContainer = document.getElementById('mystery-box-container'); 
-        const startOverlay = document.getElementById('start-overlay');
-        const startBtn = document.getElementById('start-btn');
-        
-        function shuffleArray(array) {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
-            }
+        function initGame() {
+            questions.sort(() => Math.random() - 0.5);
+            loadQuestion(0);
         }
 
-        function updateScoreDisplay() {
-            if (scoreDisplay) {
-                scoreDisplay.textContent = score;
-            }
-        }
-
-        function loadQuestion(index) {
-            gameContainer.classList.remove('fade-in');
-            void gameContainer.offsetWidth;
-            gameContainer.classList.add('fade-in');
-
-            updateScoreDisplay();
-
-            const question = questions[index];
-            const tens = Math.floor(question.num / 10);
-            const ones = question.num % 10;
-
-            itemContainer.innerHTML = '';
-            document.getElementById('tens-drop-area').innerHTML = '';
-            document.getElementById('ones-drop-area').innerHTML = '';
-            optionsContainer.innerHTML = '';
-            feedbackEl.textContent = '';
-            nextBtn.classList.add('hidden');
-            mysteryBoxOverlay.classList.add('hidden');
-
-            const pluralName = question.name.endsWith('h') ? question.name + 'es' : question.name + 's';
-            const instructionText = `Okay! Let's count the ${pluralName}! Drag the blocks!`;
-            instructionEl.textContent = instructionText;
-
-            for (let i = 0; i < tens; i++) {
-                const tensBundle = document.createElement('div');
-                tensBundle.id = `tens-${i}`;
-                tensBundle.className = 'tens-bundle draggable rounded-lg p-2 draggable';
-                tensBundle.draggable = true;
-                tensBundle.dataset.type = 'tens';
-                let emojis = '';
-                for (let j = 0; j < 10; j++) {
-                    emojis += `<span class="inline-block w-1/5 h-1/5 flex items-center justify-center">${question.item}</span>`;
-                }
-                tensBundle.innerHTML = emojis;
-                itemContainer.appendChild(tensBundle);
-            }
-
-            for (let i = 0; i < ones; i++) {
-                const onesItem = document.createElement('div');
-                onesItem.id = `ones-${i}`;
-                onesItem.className = 'ones-item draggable rounded-lg draggable m-1';
-                onesItem.draggable = true;
-                onesItem.dataset.type = 'ones';
-                onesItem.innerHTML = question.item;
-                itemContainer.appendChild(onesItem);
-            }
+        function loadQuestion(idx) {
+            const q = questions[idx];
+            const tens = Math.floor(q.num / 10);
+            const ones = q.num % 10;
             
-            addDragEvents();
-
-            const shuffledOptions = [...question.options];
-            shuffleArray(shuffledOptions);
+            droppedItemsCount = 0;
+            totalItemsToDrag = tens + ones;
             
-            shuffledOptions.forEach(option => {
-                const button = document.createElement('button');
-                button.className = 'answer-btn text-white font-bold py-2 px-4 text-xl sm:py-3 sm:px-6 sm:text-2xl rounded-lg shadow-md';
-                button.textContent = option;
-                button.dataset.value = option;
-                button.addEventListener('click', (e) => {
-                    playSound('click');
-                    checkAnswer(e);
-                });
-                optionsContainer.appendChild(button);
-            });
-        }
-        
-        function addDragEvents() {
-            const draggables = document.querySelectorAll('.draggable');
-            draggables.forEach(draggable => {
-                draggable.addEventListener('dragstart', (e) => {
-                    draggedElement = e.target.closest('.draggable');
-                    if (!draggedElement) return;
-                    e.dataTransfer.setData('text/plain', draggedElement.id);
-                    setTimeout(() => {
-                         draggedElement.style.opacity = '0.5';
-                    }, 0);
-                });
+            els.itemContainer.innerHTML = '';
+            els.tensDrop.innerHTML = '';
+            els.onesDrop.innerHTML = '';
+            els.options.innerHTML = '';
+            els.feedback.innerText = '';
+            
+            for(let i=0; i<tens; i++) els.itemContainer.appendChild(createItem('tens', q.item));
+            for(let i=0; i<ones; i++) els.itemContainer.appendChild(createItem('ones', q.item));
 
-                draggable.addEventListener('dragend', (e) => {
-                    if (draggedElement) {
-                        draggedElement.style.opacity = '1';
-                    }
-                    draggedElement = null;
-                });
-            });
-
-            const dropColumns = [tensColumn, onesColumn];
-            dropColumns.forEach(column => {
-                column.addEventListener('dragover', (e) => {
-                    e.preventDefault();
-                    if (!draggedElement) return;
-                    const columnType = column.dataset.column;
-                    const draggedType = draggedElement.dataset.type;
-                    
-                    if (columnType === draggedType) {
-                        column.classList.add('drag-over');
-                    }
-                });
-
-                column.addEventListener('dragleave', () => {
-                    column.classList.remove('drag-over');
-                });
-
-                column.addEventListener('drop', (e) => {
-                    e.preventDefault();
-                    column.classList.remove('drag-over');
-                    
-                    if (draggedElement) {
-                        const columnType = e.currentTarget.dataset.column;
-                        const draggedType = draggedElement.dataset.type;
-
-                        if (columnType === draggedType) {
-                            playSound('drop-success');
-                            draggedElement.style.opacity = '1';
-                            const dropZone = e.currentTarget.querySelector('.drop-area');
-                            dropZone.appendChild(draggedElement); 
-                            draggedElement.draggable = false;
-                            draggedElement.classList.remove('draggable');
-                            draggedElement.style.cursor = 'default';
-                        } else {
-                            playSound('drop-fail');
-                            draggedElement.style.opacity = '1';
-                        }
-                        draggedElement = null;
-                    }
-                });
-            });
-        }
-
-        function checkAnswer(e) {
-            const selectedAnswer = parseInt(e.target.dataset.value);
-            const correctAnswer = questions[currentQuestionIndex].num;
-
-            optionsContainer.querySelectorAll('button').forEach(btn => {
+            const opts = [...q.options].sort(() => Math.random() - 0.5);
+            const colors = ['btn-blue', 'btn-pink', 'btn-purple'];
+            opts.forEach((opt, i) => {
+                const btn = document.createElement('button');
+                btn.className = `btn-game locked ${colors[i%3]}`;
+                btn.innerText = opt;
                 btn.disabled = true;
-                if (parseInt(btn.dataset.value) === correctAnswer) {
-                    btn.classList.add('btn-correct');
-                } else if (parseInt(btn.dataset.value) === selectedAnswer) {
-                    btn.classList.add('btn-wrong');
-                }
-            });
-
-            if (selectedAnswer === correctAnswer) {
-                // THAY ĐỔI: Xóa score++
-                // score++; 
-                // updateScoreDisplay();
-                const feedbackText = 'Awesome! That\'s right!';
-                feedbackEl.textContent = feedbackText;
-                feedbackEl.className = 'text-green-600 text-xl font-semibold mb-4';
-                playSound('correct');
-                
-                // THAY ĐỔI: Hiển thị hộp quà sau 1 giây
-                setTimeout(showMysteryBox, 1000);
-
-            } else {
-                const feedbackText = `Oops! Not quite. The answer was ${correctAnswer}.`;
-                feedbackEl.textContent = feedbackText;
-                feedbackEl.className = 'text-red-600 text-xl font-semibold mb-4';
-                playSound('wrong');
-                
-                // THAY ĐỔI: Hiển thị hộp quà (thay vì tự động next)
-                setTimeout(showMysteryBox, 1000); 
-            }
-        }
-
-        function showMysteryBox() {
-            // THAY ĐỔI: Định nghĩa và xáo trộn điểm
-            const points = [1, 5, 10];
-            shuffleArray(points);
-
-            mysteryBoxContainer.querySelectorAll('.mystery-box-item').forEach((box, index) => {
-                // THAY ĐỔI: Đặt lại HTML thay vì textContent
-                box.innerHTML = '<span class="prize-emoji">🎁</span>';
-                box.style.animation = 'pulseSimple 1.5s infinite ease-in-out'; 
-                box.style.opacity = '1';
-                box.style.pointerEvents = 'auto'; 
-                box.dataset.points = points[index];
-
-                // Xóa điểm cũ (nếu có)
-                const oldPoints = box.querySelector('.points-display');
-                if (oldPoints) {
-                    oldPoints.remove();
-                }
+                btn.onclick = () => checkAnswer(opt, q.num, btn);
+                els.options.appendChild(btn);
             });
             
-            mysteryBoxOverlay.classList.remove('hidden');
-            setTimeout(() => {
-                mysteryBoxContent.classList.remove('scale-95', 'opacity-0');
-                mysteryBoxContent.classList.add('scale-100', 'opacity-100');
-            }, 10);
+            els.instruction.innerText = "Drag ALL blocks first! 👇";
+            els.instruction.className = "text-center text-lg sm:text-xl text-blue-600 font-bold mb-1 h-8";
         }
 
-        mysteryBoxContainer.querySelectorAll('.mystery-box-item').forEach(box => {
-            box.addEventListener('click', (e) => {
-                const clickedBox = e.currentTarget;
-
-                // THAY ĐỔI: Lấy điểm từ hộp quà
-                const pointsWon = parseInt(clickedBox.dataset.points);
-                
-                score += pointsWon;
-                updateScoreDisplay(); 
-
-                // THAY ĐỔI: Hiển thị điểm kiểu mới
-                const pointsEl = document.createElement('div');
-                pointsEl.className = 'points-display';
-                pointsEl.textContent = `+${pointsWon}`;
-                clickedBox.appendChild(pointsEl);
-                // Làm mờ emoji
-                clickedBox.querySelector('.prize-emoji').style.opacity = '0.2';
-                
-                clickedBox.style.animation = 'none';
-                
-                playSound('prize');
-                
-                mysteryBoxContainer.querySelectorAll('.mystery-box-item').forEach(otherBox => {
-                    otherBox.style.pointerEvents = 'none'; 
-                    if (otherBox !== clickedBox) {
-                        otherBox.style.opacity = '0.5';
-                        otherBox.style.animation = 'none';
-                        
-                        // THAY ĐỔI: Hiển thị điểm của các hộp khác (kiểu mờ)
-                        const otherPointsEl = document.createElement('div');
-                        otherPointsEl.className = 'points-display';
-                        otherPointsEl.textContent = `+${otherBox.dataset.points}`;
-                        otherPointsEl.style.animation = 'none'; // Không animation
-                        otherPointsEl.style.opacity = '0.7'; // Mờ hơn
-                        otherPointsEl.style.transform = 'translate(-50%, -50%) scale(0.7)'; // Nhỏ hơn
-                        otherPointsEl.style.color = '#9CA3AF'; // Màu xám
-                        otherPointsEl.style.textShadow = 'none'; // Không bóng
-                        otherBox.appendChild(otherPointsEl);
-                        otherBox.querySelector('.prize-emoji').style.opacity = '0.2';
-                    }
-                });
-
-                setTimeout(() => {
-                    mysteryBoxOverlay.classList.add('hidden');
-                    mysteryBoxContent.classList.add('scale-95', 'opacity-0');
-                    mysteryBoxContent.classList.remove('scale-100', 'opacity-100');
-                    nextQuestionLogic(); 
-                }, 2000); // Tăng thời gian chờ để bé thấy điểm
-            });
-        });
-
-        function nextQuestionLogic() {
-            currentQuestionIndex++;
-            if (currentQuestionIndex < questions.length) {
-                loadQuestion(currentQuestionIndex);
+        function createItem(type, emoji) {
+            const div = document.createElement('div');
+            div.className = `draggable-item ${type==='tens'?'tens-bundle':'ones-item'}`;
+            div.dataset.type = type;
+            if(type==='tens') {
+                let html = '';
+                for(let i=0; i<10; i++) html += `<span>${emoji}</span>`;
+                div.innerHTML = html;
             } else {
-                gameContainer.innerHTML = '';
-                // THAY ĐỔI: Thông điệp kết thúc với tổng điểm
-                const finalScoreText = `Your final score is ${score} points!`;
-                completionMessage.innerHTML = `🎉 Yippee! You finished the game! 🎉<br><span class="text-2xl mt-4">${finalScoreText}</span>`;
-                gameContainer.appendChild(completionMessage);
-                completionMessage.classList.remove('hidden');
+                div.innerHTML = emoji;
+            }
+            div.onpointerdown = handlePointerDown;
+            return div;
+        }
+
+        function updateGameState() {
+            if(droppedItemsCount === totalItemsToDrag) {
+                const btns = els.options.querySelectorAll('button');
+                btns.forEach(b => {
+                    b.disabled = false;
+                    b.classList.remove('locked');
+                });
+                els.instruction.innerText = "Now choose the answer! 🤔";
+                els.instruction.className = "text-center text-lg sm:text-xl text-green-600 font-bold mb-1 h-8 animate-pulse";
+                play('pop');
             }
         }
 
-        startBtn.addEventListener('click', () => {
+        function checkAnswer(val, correct, btn) {
+            if(val === correct) {
+                btn.style.backgroundColor = '#22c55e';
+                els.feedback.innerHTML = '<span class="text-green-500">CORRECT! DINO TIME! 🦖</span>';
+                play('correct');
+                
+                // === FIX: RE-ASSIGN CLICK HANDLER TO ENSURE IT WORKS ===
+                setTimeout(() => {
+                    const dinoBtn = document.getElementById('start-dino-btn');
+                    dinoBtn.classList.remove('hidden');
+                    dinoBtn.innerText = "START RUNNING!";
+                    dinoBtn.onclick = function() {
+                        this.classList.add('hidden');
+                        startDinoGame();
+                    };
+                    els.dinoOverlay.classList.remove('hidden');
+                }, 1000);
+            } else {
+                btn.classList.add('btn-wrong');
+                btn.disabled = true;
+                els.feedback.innerHTML = '<span class="text-red-400">Try again!</span>';
+                play('wrong');
+            }
+        }
+
+        // === DRAG & DROP ===
+        let currentDrag = null;
+        let placeholder = null;
+        let startX, startY;
+
+        function handlePointerDown(e) {
+            e.preventDefault();
+            if(e.currentTarget.parentElement.id.includes('drop-area')) return;
+
+            const item = e.currentTarget;
+            currentDrag = item;
+            
+            const rect = item.getBoundingClientRect();
+            placeholder = item.cloneNode(true);
+            placeholder.className = 'placeholder ' + (item.dataset.type === 'tens' ? 'tens-bundle' : 'ones-item');
+            placeholder.innerHTML = ''; 
+            placeholder.style.width = rect.width + 'px';
+            placeholder.style.height = rect.height + 'px';
+            item.parentNode.insertBefore(placeholder, item);
+
+            item.style.position = 'fixed';
+            item.style.width = rect.width + 'px';
+            item.style.height = rect.height + 'px';
+            item.style.left = rect.left + 'px';
+            item.style.top = rect.top + 'px';
+            item.classList.add('dragging');
+            
+            startX = e.clientX - rect.left;
+            startY = e.clientY - rect.top;
+
+            item.setPointerCapture(e.pointerId);
+            item.onpointermove = handlePointerMove;
+            item.onpointerup = handlePointerUp;
+            play('pop');
+        }
+
+        function handlePointerMove(e) {
+            if(!currentDrag) return;
+            currentDrag.style.left = (e.clientX - startX) + 'px';
+            currentDrag.style.top = (e.clientY - startY) + 'px';
+            
+            const tensCol = document.getElementById('tens-column');
+            const onesCol = document.getElementById('ones-column');
+            const tRect = tensCol.getBoundingClientRect();
+            const oRect = onesCol.getBoundingClientRect();
+            
+            tensCol.classList.remove('highlight');
+            onesCol.classList.remove('highlight');
+
+            if(e.clientX > tRect.left && e.clientX < tRect.right && e.clientY > tRect.top && e.clientY < tRect.bottom) 
+                tensCol.classList.add('highlight');
+            else if(e.clientX > oRect.left && e.clientX < oRect.right && e.clientY > oRect.top && e.clientY < oRect.bottom) 
+                onesCol.classList.add('highlight');
+        }
+
+        function handlePointerUp(e) {
+            if(!currentDrag) return;
+            currentDrag.releasePointerCapture(e.pointerId);
+            
+            const tensCol = document.getElementById('tens-column');
+            const onesCol = document.getElementById('ones-column');
+            tensCol.classList.remove('highlight');
+            onesCol.classList.remove('highlight');
+
+            const type = currentDrag.dataset.type;
+            const tRect = tensCol.getBoundingClientRect();
+            const oRect = onesCol.getBoundingClientRect();
+            const x = e.clientX, y = e.clientY;
+            let success = false;
+
+            if(type === 'tens' && x > tRect.left && x < tRect.right && y > tRect.top && y < tRect.bottom) {
+                els.tensDrop.appendChild(currentDrag);
+                success = true;
+            } else if(type === 'ones' && x > oRect.left && x < oRect.right && y > oRect.top && y < oRect.bottom) {
+                els.onesDrop.appendChild(currentDrag);
+                success = true;
+            }
+
+            if(success) {
+                resetDragStyle(currentDrag);
+                currentDrag.onpointerdown = null; 
+                currentDrag.style.cursor = 'default';
+                droppedItemsCount++;
+                updateGameState();
+                play('pop');
+            } else {
+                resetDragStyle(currentDrag);
+                placeholder.replaceWith(currentDrag);
+                play('wrong');
+            }
+
+            if(placeholder && document.body.contains(placeholder)) placeholder.remove();
+            currentDrag.classList.remove('dragging');
+            currentDrag = null;
+        }
+
+        function resetDragStyle(item) {
+            item.style.position = '';
+            item.style.width = '';
+            item.style.height = '';
+            item.style.left = '';
+            item.style.top = '';
+            item.style.zIndex = '';
+        }
+
+        // === DINO MINI GAME ===
+        const canvas = document.getElementById('dino-canvas');
+        const ctx = canvas.getContext('2d');
+        let dinoGameId;
+        let dino = { x: 50, y: 170, w: 40, h: 40, dy: 0, jumpPower: -12, grounded: true, legFrame: 0 };
+        let obstacles = [];
+        let dinoScore = 0;
+        let gameSpeed = 5;
+        let frameCount = 0;
+        let clouds = [];
+        
+        const obstacleTypes = ['🌵', '🌲', '🍄', '🥚'];
+
+        // Initial Click Assignment
+        document.getElementById('start-dino-btn').onclick = function() {
+            this.classList.add('hidden');
+            startDinoGame();
+        };
+
+        function startDinoGame() {
+            if (dinoGameId) cancelAnimationFrame(dinoGameId);
+            dinoScore = 0;
+            gameSpeed = 5;
+            obstacles = [];
+            clouds = [];
+            frameCount = 0;
+            // Generate some initial clouds
+            for(let i=0; i<3; i++) {
+                clouds.push({x: Math.random() * canvas.width, y: Math.random() * 100, scale: 0.5 + Math.random() * 0.5});
+            }
+
+            dino.y = 170;
+            dino.dy = 0;
+            dino.grounded = true;
+            document.getElementById('dino-score').innerText = "Score: 0";
+            canvas.addEventListener('pointerdown', dinoJump);
+            document.addEventListener('keydown', handleKeyJump);
+            updateDinoGame();
+        }
+
+        function handleKeyJump(e) { if(e.code==='Space') dinoJump(); }
+
+        function dinoJump() {
+            if(dino.grounded) {
+                dino.dy = dino.jumpPower;
+                dino.grounded = false;
+                play('jump');
+            }
+        }
+
+        // --- DRAWING FUNCTIONS ---
+
+        function drawBackground() {
+            // Sky is handled by CSS background-color
+
+            // Mountains (Parallax-ish)
+            ctx.fillStyle = "#a5b4fc"; // Light purple/blue mountains
+            ctx.beginPath();
+            ctx.moveTo(0, 215);
+            ctx.lineTo(100, 100);
+            ctx.lineTo(250, 215);
+            ctx.fill();
+
+            ctx.fillStyle = "#818cf8"; // Darker mountain
+            ctx.beginPath();
+            ctx.moveTo(200, 215);
+            ctx.lineTo(350, 80);
+            ctx.lineTo(550, 215);
+            ctx.fill();
+
+            ctx.fillStyle = "#c7d2fe"; // Far mountain
+            ctx.beginPath();
+            ctx.moveTo(450, 215);
+            ctx.lineTo(600, 120);
+            ctx.lineTo(750, 215);
+            ctx.fill();
+
+            // Clouds
+            ctx.fillStyle = "rgba(255, 255, 255, 0.7)";
+            for(let cloud of clouds) {
+                cloud.x -= gameSpeed * 0.2;
+                if(cloud.x < -100) cloud.x = canvas.width + 100;
+                
+                ctx.beginPath();
+                ctx.arc(cloud.x, cloud.y, 20 * cloud.scale, 0, Math.PI * 2);
+                ctx.arc(cloud.x + 15 * cloud.scale, cloud.y - 10 * cloud.scale, 25 * cloud.scale, 0, Math.PI * 2);
+                ctx.arc(cloud.x + 35 * cloud.scale, cloud.y, 20 * cloud.scale, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function drawDino(x, y) {
+            dino.legFrame += 0.2;
+            const legOffset = Math.sin(dino.legFrame) * 5;
+
+            // --- DRAW CUTE DINO (Improved) ---
+            
+            // Body
+            ctx.fillStyle = "#4ade80"; // Bright Green
+            ctx.beginPath();
+            ctx.ellipse(x + 25, y + 28, 22, 16, 0, 0, Math.PI * 2); 
+            ctx.fill();
+
+            // Belly
+            ctx.fillStyle = "#ecfdf5";
+            ctx.beginPath();
+            ctx.ellipse(x + 25, y + 34, 12, 8, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Head
+            ctx.fillStyle = "#4ade80";
+            ctx.beginPath();
+            ctx.arc(x + 40, y + 15, 16, 0, Math.PI * 2); 
+            ctx.fill();
+
+            // Eye
+            ctx.fillStyle = "white";
+            ctx.beginPath();
+            ctx.arc(x + 44, y + 10, 6, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = "black";
+            ctx.beginPath();
+            ctx.arc(x + 46, y + 10, 3, 0, Math.PI * 2);
+            ctx.fill();
+            // Cheek (Pink)
+            ctx.fillStyle = "#f472b6";
+            ctx.beginPath();
+            ctx.arc(x + 38, y + 18, 3, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Smile
+            ctx.beginPath();
+            ctx.arc(x + 46, y + 18, 4, 0.2, Math.PI - 0.2); 
+            ctx.strokeStyle = "#333";
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Spikes (Yellow)
+            ctx.fillStyle = "#facc15"; 
+            for(let i=0; i<3; i++) {
+                ctx.beginPath();
+                ctx.moveTo(x + 5 + (i*9), y + 18);
+                ctx.lineTo(x + 10 + (i*9), y + 5);
+                ctx.lineTo(x + 15 + (i*9), y + 20);
+                ctx.fill();
+            }
+
+            // Legs (Moving)
+            ctx.strokeStyle = "#16a34a";
+            ctx.lineWidth = 5;
+            ctx.lineCap = "round";
+            
+            ctx.beginPath();
+            ctx.moveTo(x + 20, y + 38);
+            ctx.lineTo(x + 20, y + 48 + (dino.grounded ? legOffset : 0));
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(x + 32, y + 38);
+            ctx.lineTo(x + 32, y + 48 - (dino.grounded ? legOffset : 0));
+            ctx.stroke();
+
+            // Tail
+            ctx.fillStyle = "#4ade80";
+            ctx.beginPath();
+            ctx.moveTo(x + 5, y + 25);
+            ctx.lineTo(x - 8, y + 15);
+            ctx.lineTo(x + 8, y + 35);
+            ctx.fill();
+        }
+
+        function updateDinoGame() {
+            ctx.clearRect(0,0, canvas.width, canvas.height);
+            frameCount++;
+            
+            // Draw Scenery First
+            drawBackground();
+
+            // Speed Up logic
+            if(frameCount % 300 === 0) gameSpeed += 0.5;
+
+            // Ground
+            ctx.fillStyle = '#86efac'; // Light Grass
+            ctx.fillRect(0, 215, canvas.width, 35);
+            ctx.fillStyle = '#16a34a'; // Dark Grass Line
+            ctx.fillRect(0, 215, canvas.width, 5);
+
+            // Gravity
+            dino.dy += 0.6; 
+            dino.y += dino.dy;
+            if(dino.y > 170) { dino.y = 170; dino.dy = 0; dino.grounded = true; }
+            
+            drawDino(dino.x, dino.y);
+
+            // Obstacles Spawn
+            if(frameCount % Math.max(60, 120 - Math.floor(gameSpeed*5)) === 0 && Math.random() > 0.4) {
+                const type = obstacleTypes[Math.floor(Math.random() * obstacleTypes.length)];
+                obstacles.push({ x: canvas.width, w: 20, h: 30, type: type, passed: false });
+            }
+
+            for(let i=0; i<obstacles.length; i++) {
+                let ob = obstacles[i];
+                ob.x -= gameSpeed;
+                
+                // Draw Obstacle
+                ctx.font = "30px Arial";
+                ctx.fillText(ob.type, ob.x, 215);
+
+                // Collision
+                if(
+                    dino.x + 40 > ob.x + 5 && 
+                    dino.x + 10 < ob.x + 25 && 
+                    dino.y + 45 > 190
+                ) {
+                    crashDino();
+                    return;
+                }
+
+                if(ob.x < -30) {
+                    obstacles.splice(i, 1);
+                    i--;
+                    dinoScore++;
+                    document.getElementById('dino-score').innerText = `Score: ${dinoScore}`;
+                }
+            }
+            
+            dinoGameId = requestAnimationFrame(updateDinoGame);
+        }
+
+        function crashDino() {
+            if (dinoGameId) cancelAnimationFrame(dinoGameId);
+            play('crash');
+            // FIX: Don't remove the onclick handler, just update text
+            const btn = document.getElementById('start-dino-btn');
+            btn.innerText = "CRASH! NEXT LEVEL >>";
+            btn.classList.remove('hidden');
+            // Disable button interaction temporarily to prevent accidental restarts
+            btn.style.pointerEvents = 'none'; 
+            
+            setTimeout(() => {
+                els.dinoOverlay.classList.add('hidden');
+                score += dinoScore;
+                els.score.innerText = score;
+                canvas.removeEventListener('pointerdown', dinoJump);
+                document.removeEventListener('keydown', handleKeyJump);
+                
+                // Re-enable button interaction for next time
+                btn.style.pointerEvents = 'auto';
+
+                currentQIndex++;
+                if(currentQIndex < questions.length) loadQuestion(currentQIndex);
+                else {
+                    els.finalScore.innerText = score;
+                    els.completionOverlay.classList.remove('hidden');
+                }
+            }, 1500);
+        }
+
+        // === START & RESTART LOGIC ===
+        document.getElementById('start-btn').onclick = () => {
             Tone.start();
             soundStarted = true;
-            
-            startOverlay.style.display = 'none';
-            gameContainer.classList.remove('hidden');
-            
-            shuffleArray(questions);
-            loadQuestion(currentQuestionIndex);
-        });
+            els.startOverlay.style.display = 'none';
+            els.game.classList.remove('hidden');
+            initGame();
+        };
+
+        document.getElementById('play-again-btn').onclick = () => {
+            resetGame();
+        };
 
     </script>
 </body>
